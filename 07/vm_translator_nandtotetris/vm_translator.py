@@ -53,11 +53,10 @@ def stack_push_d():
 
 
 ram_map = {
-    "local": 300,
-    "argument": 40,
-    "this": 3030,
-    "that": 3040
-
+    "local": 1,
+    "argument": 2,
+    "this": 3,
+    "that": 4
 }
 # ram_index_map = {
 #     {"local", 300},
@@ -94,11 +93,11 @@ for line in lines:
         value = int(value)
         if action == "push":
             if ram_map.__contains__(segment):
-                push_new_line(f"@{(ram_map[segment])+value}")
-                # push_new_line("A=M")
-                # while value > 0:
-                #     push_new_line("A=A+1")
-                #     value -= 1
+                push_new_line(f"@{ram_map[segment]}")
+                push_new_line("A=M")
+                while value > 0:
+                    push_new_line("A=A+1")
+                    value -= 1
                 push_new_line("D=M")
             else:
                 match segment:
@@ -125,7 +124,13 @@ for line in lines:
             stack_pop_m()
             push_new_line("D=M")
             if ram_map.__contains__(segment):
-                push_new_line(f"@{(ram_map[segment])+value}")
+                push_new_line(f"@{ram_map[segment]}")
+                push_new_line("A=M")
+                while value > 0:
+                    push_new_line("A=A+1")
+                    value -= 1
+
+                # push_new_line(f"@{(ram_map[segment])+value}")
                 # push_new_line("@"+(ram_map[segment]))
                 # push_new_line("A=M")
                 # while value > 0:
