@@ -1,0 +1,205 @@
+function Snake.new 0
+push constant 2
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push pointer 0
+return
+function Snake.dispose 0
+push argument 0
+pop pointer 0
+push this 0
+call Point.dispose 1
+pop temp 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Snake.getSize 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Snake.getHead 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Snake.addPoint 3
+push argument 0
+pop pointer 0
+push argument 1
+pop local 0
+push this 0
+call Point.getEnd 1
+pop local 2
+push local 0
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 2
+call Point.getX 1
+push local 2
+call Point.getY 1
+push constant 10
+sub
+push constant 0
+call Point.new 3
+pop local 1
+label IF_FALSE0
+push local 0
+push constant 2
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 2
+call Point.getX 1
+push local 2
+call Point.getY 1
+push constant 10
+add
+push constant 0
+call Point.new 3
+pop local 1
+label IF_FALSE1
+push local 0
+push constant 3
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 2
+call Point.getX 1
+push constant 10
+sub
+push local 2
+call Point.getY 1
+push constant 0
+call Point.new 3
+pop local 1
+label IF_FALSE2
+push local 0
+push constant 4
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push local 2
+call Point.getX 1
+push constant 10
+add
+push local 2
+call Point.getY 1
+push constant 0
+call Point.new 3
+pop local 1
+label IF_FALSE3
+push local 2
+push local 1
+call Point.setNext 2
+pop temp 0
+push this 1
+push constant 1
+add
+pop this 1
+push constant 0
+return
+function Snake.move 2
+push argument 0
+pop pointer 0
+push this 0
+call Point.removeEnd 1
+pop temp 0
+push argument 1
+pop local 0
+push local 0
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 0
+call Point.getX 1
+push this 0
+call Point.getY 1
+push constant 10
+sub
+push this 0
+call Point.new 3
+pop local 1
+label IF_FALSE0
+push local 0
+push constant 2
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push this 0
+call Point.getX 1
+push this 0
+call Point.getY 1
+push constant 10
+add
+push this 0
+call Point.new 3
+pop local 1
+label IF_FALSE1
+push local 0
+push constant 3
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push this 0
+call Point.getX 1
+push constant 10
+sub
+push this 0
+call Point.getY 1
+push this 0
+call Point.new 3
+pop local 1
+label IF_FALSE2
+push local 0
+push constant 4
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push this 0
+call Point.getX 1
+push constant 10
+add
+push this 0
+call Point.getY 1
+push this 0
+call Point.new 3
+pop local 1
+label IF_FALSE3
+push local 1
+pop this 0
+push constant 0
+return
+function Snake.draw 0
+push argument 0
+pop pointer 0
+push this 0
+call Point.draw 1
+pop temp 0
+push constant 0
+return
+function Snake.erase 0
+push argument 0
+pop pointer 0
+push this 0
+call Point.erase 1
+pop temp 0
+push constant 0
+return

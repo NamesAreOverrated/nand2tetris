@@ -1,0 +1,33 @@
+class Main {
+   function void main() {
+   
+   var bool isRun;
+   var int point;
+   var Point startPoint;
+   var Snake snake;
+   var Array points;
+   var SnakeGame game;
+   var int gamePoint;
+
+   
+
+   let startPoint=Point.new(50,50,null);
+   let snake= Snake.new(startPoint,10);
+
+   do snake.addPoint(4);
+   do snake.addPoint(4);
+
+   let gamePoint=2;
+   let points=Array.new(gamePoint);
+
+   let points[0]=Point.new(30,30,null);
+   
+   let points[1]=Point.new(100,80,null);
+
+   let game =SnakeGame.new(points,gamePoint,snake);
+   do game.run();
+
+   return;
+   }
+}
+

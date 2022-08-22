@@ -1,0 +1,78 @@
+
+class Snake{
+    field Point point;
+    field int currentSize;
+
+    constructor Snake new(Point pointA,int size) {
+       let point=pointA;
+       let currentSize=size;
+      return this;
+   }  
+   
+   method void dispose() {
+
+      do point.dispose();
+      do Memory.deAlloc(this);
+      return;
+   }
+   method int getSize(){
+    return currentSize;
+   }
+   method Point getHead(){
+    return point;
+   }
+   
+  
+   method void addPoint(int directionA)
+   {
+    var in direction;
+    var Point newPoint,endPoint;
+
+    
+    let direction=directionA;
+    let endPoint=point.getEnd();
+
+    if (direction = 1) {let newPoint=Point.new(endPoint.getX(),endPoint.getY()-10,null); }
+    if (direction = 2) { let newPoint=Point.new(endPoint.getX(),endPoint.getY()+10,null); }
+    if (direction = 3) { let newPoint=Point.new(endPoint.getX()-10,endPoint.getY(),null); }
+    if (direction = 4) { let newPoint=Point.new(endPoint.getX()+10,endPoint.getY(),null); }
+
+    do endPoint.setNext(newPoint);
+    let currentSize=currentSize+1;
+    return;
+    }
+    
+    
+    
+
+
+
+    method void move(int directionA){
+    var in direction;
+    var Point newPoint;
+
+    do point.removeEnd();
+    let direction=directionA;
+    
+    if (direction = 1) {let newPoint=Point.new(point.getX(),point.getY()-10,point); }
+    if (direction = 2) { let newPoint=Point.new(point.getX(),point.getY()+10,point); }
+    if (direction = 3) { let newPoint=Point.new(point.getX()-10,point.getY(),point); }
+    if (direction = 4) { let newPoint=Point.new(point.getX()+10,point.getY(),point); }
+
+    let point=newPoint;
+
+    return;
+    }
+    method void draw(){
+    do point.draw();
+        return;    
+    }
+    method void erase() {
+
+        
+    
+     do  point.erase();
+        return;
+   }
+
+}

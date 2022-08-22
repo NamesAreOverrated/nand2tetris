@@ -1,0 +1,110 @@
+class SnakeGame{
+   
+    field Array points;
+
+    field int totalPoints,direction;
+    field Snake snake;
+   
+    constructor SnakeGame new(Array pointsA,int totalPointsA,Snake snakeA) {
+        let points=pointsA;
+        let totalPoints=totalPointsA;
+        let snake=snakeA;
+
+      return this;
+   }
+   
+     method void run() {
+      var char key;  // the key currently pressed by the user
+      var boolean exit;
+
+        var int i,endDirection,headX,headY,checkX,checkY;
+        var Point snakeHead;
+        var Point checkPoint;
+        var bool isAdd,isPlaying;
+        var int currentPoint;
+
+        
+
+
+      let exit = false;
+      
+      while (~exit) {
+        
+        
+        let direction=0;
+        let isPlaying=false;
+        
+         while (key = 0) {
+        let key = Keyboard.keyPressed();
+        }
+         // waits for a key to be pressed
+         if (key = 81)  { let exit = true; }     // q key
+         if (key = 131) { let direction = 1; let isPlaying=true; }   // up arrow
+         if (key = 133) { let direction = 2; let isPlaying=true; }   // down arrow
+         if (key = 130) { let direction = 3; let isPlaying=true;}   // left arrow
+         if (key = 132) { let direction = 4; let isPlaying=true;}   // right arrow
+
+         // waits for the key to be released
+          while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+         } 
+
+if(isPlaying){
+
+        let isAdd=false;
+        let i=0;
+        let snakeHead=snake.getHead();
+        let headX=snakeHead.getX();
+        let headY=snakeHead.getY();
+
+        
+
+        while(i<totalPoints){
+          if(~(points[i]=null)){
+            let checkPoint=points[i];
+
+            let checkX=checkPoint.getX();
+            let checkY=checkPoint.getY();
+            if(headX=checkX){
+                if(headY=checkY){
+                    do snake.addPoint(direction);
+                    let isAdd=true;
+                    let points[i]=null;
+                    let currentPoint=currentPoint+1;
+                    
+                }
+            }
+            }
+            let i=i+1;
+        }
+        if(~isAdd){
+            do snake.move(direction);
+
+            let snakeHead=snake.getHead();
+            let checkPoint=snakeHead.getNext();
+
+            let headX=snakeHead.getX();
+            let headY=snakeHead.getY();
+            while(~(checkPoint=null)){
+
+            let checkX=checkPoint.getX();
+            let checkY=checkPoint.getY();
+            if(headX=checkX){
+                if(headY=checkY){
+                   return; 
+                }
+            }
+           let checkPoint=checkPoint.getNext();
+          }   
+        
+        }
+        if(currentPoint=totalPoints){
+            return;
+        }
+        }
+
+     } // while
+     return;
+   }
+
+}
