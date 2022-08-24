@@ -1,16 +1,4 @@
-from argparse import ArgumentError
-from ast import parse
-from asyncore import read
-from calendar import c
-from email.policy import default
-from math import fabs
-from operator import index
-from pprint import pprint
-import string
 import sys
-from tkinter import W
-from unicodedata import name
-from venv import create
 
 
 def push_new_line(str):
@@ -76,18 +64,9 @@ func_local_var_map = {
 }
 
 
-# ram_index_map = {
-#     {"local", 300},
-#     {"argument", 400},
-#     {"THIS", 3000},
-#     {"THAT", 3010},
-#     {"temp", 5}
-
-# }
-
 args = sys.argv
 if len(args) < 3:
-    ArgumentError
+    raise ValueError("not enough arguments!")
 
 merge_file_Count = len(args)-2
 lines = []
