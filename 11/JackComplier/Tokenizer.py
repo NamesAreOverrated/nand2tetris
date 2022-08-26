@@ -1,3 +1,6 @@
+from operator import truediv
+
+
 class Token:
     def __init__(self, value, type) -> None:
         self.value = value.rstrip()
@@ -80,12 +83,17 @@ class Tokenizer:
         current_str = ""
         is_started = False
         is_skip = False
+        is_skip_newline_stop = False
         start_index = self.current_index
         self.next_index = self.current_index
         token = None
         is_str = False
+        skip_count = 0
         for c in self.file[start_index:]:
             self.next_index += 1
+            if skip_count > 0:
+                skip_count -= 1
+                continue
             if is_str:
                 current_str += c
                 is_started = True
@@ -93,18 +101,35 @@ class Tokenizer:
                     is_str = False
                     break
                 continue
-            if c == '/':
+            if c == '/' and not is_skip:
                 if is_started:
                     break
-                if self.file[self.next_index] == '/' or (self.file[self.next_index] == '*' and self.file[self.next_index+1] == '*'):
+                if self.file[self.next_index] == '/':
+                    is_skip_newline_stop = True
                     is_skip = True
+                    skip_count = 1
                     continue
+                elif (self.file[self.next_index] == '*' and self.file[self.next_index+1] == '*'):
+                    is_skip_newline_stop = False
+                    is_skip = True
+                    skip_count = 2
+                    continue
+
             if c == '\n':
                 if is_started:
                     break
-                if is_skip:
+                if is_skip and is_skip_newline_stop:
                     is_skip = False
                 continue
+
+            if is_skip and not is_skip_newline_stop and c == '*':
+                if self.file[self.next_index] == '/':
+
+                    is_skip = False
+                    skip_count = 1
+                    continue
+                else:
+                    continue
 
             if is_skip:
                 continue
@@ -137,7 +162,7 @@ class Tokenizer:
             token = Token(value=current_str, type="keyword")
         elif(current_str.startswith('"') and current_str.endswith('"')):
             token = Token(
-                value=current_str[1:len(current_str)-2], type="StringConstant")
+                value=current_str[1:len(current_str)-2], type="stringConstant")
 
         elif current_str.isnumeric():
             token = Token(
