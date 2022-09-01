@@ -34,6 +34,7 @@ class VmWriter:
         pass
 
     def write_arithmetic(self, command):
+        print(f"Write : {self.__op_actions[command]}")
         self.__write_line(self.__op_actions[command])
 
     def write_label(self, label):

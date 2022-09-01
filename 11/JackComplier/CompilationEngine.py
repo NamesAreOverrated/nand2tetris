@@ -129,7 +129,6 @@ class CompilationEngine:
 
         self.compile_subroutine_body(type, name)
 
-        self.__vm_writer.write_new_line()
         pass
 
     def compile_parameter_list(self):
@@ -450,8 +449,9 @@ class CompilationEngine:
             pass
         # unaryOP term
         elif (self.tokenizer.token_value() == '~') or (self.tokenizer.token_value() == '-'):
-
             op = self.tokenizer.token_value()
+
+            print(op)
             self.tokenizer.advance()
             self.compile_term()
             self.__vm_writer.write_arithmetic(op)
