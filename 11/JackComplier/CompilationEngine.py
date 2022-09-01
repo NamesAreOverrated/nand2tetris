@@ -1,4 +1,5 @@
 import math
+from pydoc import classname
 from unicodedata import name
 from SymbolTable import SymbolTable
 from VmWriter import VmWriter
@@ -40,7 +41,6 @@ class CompilationEngine:
         return self.compile_class()
 
     def compile_class(self):
-
         if(self.tokenizer.has_more_tokens()):
             # class
             self.tokenizer.advance()
@@ -48,6 +48,7 @@ class CompilationEngine:
             self.tokenizer.advance()
             # name
             self.__class_name = self.tokenizer.token_value()
+            print(self.__class_name)
             self.tokenizer.advance()
 
             # {
@@ -66,7 +67,6 @@ class CompilationEngine:
         pass
 
     def compile_class_var_dec(self):
-        print("classVarDec")
         # field/static
 
         kind = self.tokenizer.token_value()
@@ -97,10 +97,8 @@ class CompilationEngine:
         pass
 
     def compile_subroutine_dec(self):
-        print("subroutineDec")
 
         self.__symbolTable.start_subroutine()
-        print("reset!")
 
         # method/function
 
@@ -136,7 +134,6 @@ class CompilationEngine:
 
     def compile_parameter_list(self):
 
-        print("parameter_list")
         if self.tokenizer.token_value() == ')':
             return
 
@@ -162,7 +159,6 @@ class CompilationEngine:
         pass
 
     def compile_subroutine_body(self, subroutine_type, subroutine_name):
-        print("subroutine_body")
         nLocals = 0
         # {
         self.tokenizer.advance()
@@ -171,13 +167,20 @@ class CompilationEngine:
             nLocals += self.compile_var_dec()
             pass
 
-        if subroutine_type == 'constructor':
-            subroutine_name = 'new'
-        elif subroutine_name == 'main':
-            subroutine_name = 'init'
-
         self.__vm_writer.write_function(
             self.__class_name+'.'+subroutine_name, nLocals)
+
+        if subroutine_type == 'constructor':
+            subroutine_name = 'new'
+            self.__vm_writer.write_push(
+                "constant", self.__symbolTable.get_class_var_count("field"))
+            self.__vm_writer.write_call(
+                "Memory.alloc", 1)
+            self.__vm_writer.write_pop("pointer", 0)
+
+        elif subroutine_type == "method":
+            self.__vm_writer.write_push('argument', 0)
+            self.__vm_writer.write_pop('pointer', 0)
 
         # statements
         self.compile_statements()
@@ -187,7 +190,6 @@ class CompilationEngine:
         pass
 
     def compile_var_dec(self):
-        print("varDec")
         count = 0
         # var
         self.tokenizer.advance()
@@ -216,7 +218,6 @@ class CompilationEngine:
         return count
 
     def compile_statements(self):
-        print("statement")
 
         while(self.tokenizer.has_more_tokens()):
 
@@ -241,7 +242,6 @@ class CompilationEngine:
         pass
 
     def compile_if_statement(self):
-        print("ifStatement")
         # if
         self.tokenizer.advance()
         # (
@@ -283,7 +283,6 @@ class CompilationEngine:
         pass
 
     def compile_while_statement(self):
-        print("whileStatement")
         # while
         self.tokenizer.advance()
         # (
@@ -310,7 +309,6 @@ class CompilationEngine:
         self.tokenizer.advance()
 
     def compile_do_statement(self):
-        print("doStatement")
         # do
         self.tokenizer.advance()
         # name
@@ -319,16 +317,32 @@ class CompilationEngine:
         self.tokenizer.advance()
 
         if(self.tokenizer.token_value() == '.'):
-            self.tokenizer.advance()
-            # name
-            name += f".{self.tokenizer.token_value()}"
-            self.tokenizer.advance()
+            if(self.__symbolTable.is_defined(name)):
+                self.write_push_identifier(name)
+                nArgs += 1
+                # .
+                self.tokenizer.advance()
+                # name
+                name = self.__symbolTable.get_type_of(
+                    name)+"."+self.tokenizer.token_value()
+                self.tokenizer.advance()
+            else:
+                # .
+                self.tokenizer.advance()
+                # name
+                name += f".{self.tokenizer.token_value()}"
+                self.tokenizer.advance()
+        else:
+            self.__vm_writer.write_push("pointer", 0)
+            name = self.__class_name+"."+name
+            nArgs += 1
+
         # (
         self.tokenizer.advance()
 
         # expressionList
         if self.tokenizer.token_value() != ')':
-            nArgs = self.compile_expression_list()
+            nArgs += self.compile_expression_list()
 
         # )
         self.tokenizer.advance()
@@ -340,7 +354,6 @@ class CompilationEngine:
         self.__vm_writer.write_pop("temp", 0)
 
     def compile_return_statement(self):
-        print("returnStatement")
         # return
         self.tokenizer.advance()
         # expression
@@ -357,7 +370,6 @@ class CompilationEngine:
         pass
 
     def compile_let_statement(self):
-        print("letStatement")
         # let
         self.tokenizer.advance()
         # name
@@ -367,13 +379,17 @@ class CompilationEngine:
 
         if self.tokenizer.token_value() == '[':
             is_array = True
+
             # [
             self.tokenizer.advance()
             # expression
             self.compile_expression()
             # ]
 
-            self.__vm_writer.write_pop("pointer", 1)
+            self.write_push_identifier(name)
+            # add the value of base array address and new address
+            self.__vm_writer.write_arithmetic('+')
+
             self.tokenizer.advance()
 
         # =
@@ -396,10 +412,12 @@ class CompilationEngine:
                     self.__vm_writer.write_pop(
                         "this", self.__symbolTable.get_index_of(name))
         else:
+            self.__vm_writer.write_pop("temp", 0)
+            self.__vm_writer.write_pop("pointer", 1)
+            self.__vm_writer.write_push("temp", 0)
             self.__vm_writer.write_pop("that", 0)
 
     def compile_expression(self):
-        print("expression")
         self.compile_term()
 
         while True:
@@ -418,7 +436,7 @@ class CompilationEngine:
         return output
 
     def compile_term(self):
-        print("term")
+
         # expression
         if self.tokenizer.token_value() == '(':
             # (
@@ -448,15 +466,13 @@ class CompilationEngine:
             # varName[expressionList]
             if self.tokenizer.token_value() == '[':
 
-                self.write_push_identifier(name)
-                self.__vm_writer.write_pop("pointer", 1)
-
                 # [
                 self.tokenizer.advance()
 
                 # expression
                 self.compile_expression()
 
+                self.write_push_identifier(name)
                 # add the value of base array address and new address
                 self.__vm_writer.write_arithmetic('+')
                 self.__vm_writer.write_pop("pointer", 1)
@@ -466,20 +482,34 @@ class CompilationEngine:
 
             elif (self.tokenizer.token_value() == '(') or (self.tokenizer.token_value() == '.'):
                 # subroutineCall
+                nArgs = 0
 
                 if(self.tokenizer.token_value() == '.'):
-                    # .
-                    self.tokenizer.advance()
-                    # name
-                    name += "."+self.tokenizer.token_value()
-                    self.tokenizer.advance()
+                    if(self.__symbolTable.is_defined(name)):
+                        self.write_push_identifier(name)
+                        nArgs += 1
+                        # .
+                        self.tokenizer.advance()
+                        name = self.__symbolTable.get_type_of(
+                            name)+"."+self.tokenizer.token_value()
+                        self.tokenizer.advance()
+
+                    else:
+                        # .
+                        self.tokenizer.advance()
+                        # name
+                        name += "."+self.tokenizer.token_value()
+                        self.tokenizer.advance()
+                else:
+                    self.__vm_writer.write_push("pointer", 0)
+                    name = self.__class_name+"."+name
+                    nArgs += 1
 
                 # (
                 self.tokenizer.advance()
                 # expressionList
-                nArgs = 0
                 if self.tokenizer.token_value() != ')':
-                    nArgs = self.compile_expression_list()
+                    nArgs += self.compile_expression_list()
                 # )
                 self.__vm_writer.write_call(name, nArgs)
                 self.tokenizer.advance()
@@ -510,7 +540,6 @@ class CompilationEngine:
 
     def compile_expression_list(self):
 
-        print("expressionList")
         nArg = 0
 
         self.compile_expression()
@@ -525,7 +554,6 @@ class CompilationEngine:
         return nArg
 
     def write_push_string(self, s):
-        s = s[1:-1]
         self.write_push_int(len(s))
         self.__vm_writer.write_call('String.new', 1)
 
@@ -538,23 +566,15 @@ class CompilationEngine:
         self.__vm_writer.write_push('constant', n)
 
     def write_push_identifier(self, name):
-        print("identifier:" + name)
-
-        print("class name :" + self.__class_name)
-        self.__symbolTable.print_tables()
 
         if self.__symbolTable.is_in_subroutine_table(name):
             self.__vm_writer.write_push(self.__symbolTable.get_kind_of(
                 name), self.__symbolTable.get_index_of(name))
-            print("SUB PUSH")
-        else:
-            if self.__symbolTable.get_kind_of(name) == "static":
-                print("STATIC PUSH")
-                self.__vm_writer.write_push(
-                    "static", self.__symbolTable.get_index_of(name))
+        elif self.__symbolTable.get_kind_of(name) == "static":
+            self.__vm_writer.write_push(
+                "static", self.__symbolTable.get_index_of(name))
 
-            else:
-                print("THIS PUSH")
-                self.__vm_writer.write_push(
-                    "this", self.__symbolTable.get_index_of(name))
+        else:
+            self.__vm_writer.write_push(
+                "this", self.__symbolTable.get_index_of(name))
         pass

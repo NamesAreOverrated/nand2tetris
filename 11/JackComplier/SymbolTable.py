@@ -66,10 +66,8 @@ class SymbolTable:
         if not self.__subroutine_table == None:
             self.__subroutine_table.define(name, type, kind)
 
-            print(f"sub define {name} | {type} {kind}")
             return
         self.__class_table.define(name, type, kind)
-        print(f"class define {name} | {type} {kind}")
         pass
 
     def start_subroutine(self):
@@ -103,8 +101,15 @@ class SymbolTable:
             return False
         return True
 
+    def get_class_var_count(self, kind):
+        return self.__class_table.get_var_count(kind)
+
     def is_in_class_table(self, name):
         return self.__class_table.is_defined(name)
+    def is_defined(self,name):
+        if self.__class_table.is_defined(name):
+            return True
+        return self.__subroutine_table.is_defined(name) 
 
     def print_tables(self):
         print("class table")
